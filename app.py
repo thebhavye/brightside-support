@@ -5,6 +5,16 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 import bot
+import medic_runtime as medic
+import neatlogs
+import os
+
+# Traced into neatlogs with the release and environment Medic needs (added by agent-medic init).
+if not os.environ.get("MEDIC_RUNNER"):          # Medic's own runs initialize neatlogs themselves
+    neatlogs.init(workflow_name="brightside-support",
+                  tags=["env:" + os.environ.get("MEDIC_ENV", "prod"),
+                        "release:" + os.environ.get("GIT_SHA", "dev")[:12]],
+                  instrumentations=["openai"])
 
 app = FastAPI(title="Brightside Bikes support")
 
@@ -18,6 +28,7 @@ class ChatReply(BaseModel):
 
 
 @app.post("/api/chat")
+@medic.entrypoint
 def chat(req: ChatRequest) -> ChatReply:
     return ChatReply(reply=bot.answer(req.message))
 
@@ -25,3 +36,8 @@ def chat(req: ChatRequest) -> ChatReply:
 @app.get("/")
 def home():
     return FileResponse("static/index.html")
+
+
+# Added by agent-medic init: Medic asks your agent its known-answer questions through this.
+def medic_answer(question: str):
+    return chat(ChatRequest(message=question))

@@ -1,0 +1,17 @@
+# Agent Medic: how to run and heal this agent. See `agent-medic init --help`.
+
+[agent]
+entrypoint = "app:medic_answer"
+files = ["app.py", "bot.py"]
+python = ".venv/Scripts/python.exe"
+
+[neatlogs]
+workflow = "brightside-support"
+
+[deploy]
+mode = "pr"
+pr = "open"
+branch = "main"
+
+[evals]
+cases = ".medic/evals.jsonl"

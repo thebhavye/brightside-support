@@ -6,6 +6,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from openai import OpenAI
+import medic_runtime as medic
 
 load_dotenv()
 
@@ -25,6 +26,7 @@ STOPWORDS = {"a", "an", "the", "is", "are", "do", "does", "i", "my", "you", "you
              "for", "in", "and", "or", "can", "how", "what", "when", "where", "who", "it", "if", "be"}
 
 
+@medic.surface("bot._words")
 def _words(text: str) -> set[str]:
     return {w for w in re.findall(r"[a-z0-9$]+", text.lower()) if w not in STOPWORDS}
 
@@ -42,22 +44,25 @@ def load_sections() -> list[str]:
 SECTIONS = load_sections()
 
 
-def retrieve(question: str, k: int = TOP_K) -> list[str]:
+@medic.surface("bot.retrieve")
+def retrieve(question: str, k: int = medic.value("bot.top_k", TOP_K)) -> list[str]:
     """The k FAQ sections sharing the most words with the question."""
     q = _words(question)
     ranked = sorted(SECTIONS, key=lambda s: len(q & _words(s)), reverse=True)
     return ranked[:k]
 
 
+@medic.surface("bot.build_messages")
 def build_messages(question: str, sections: list[str]) -> list[dict]:
     faq = "\n\n".join(sections)
-    return [{"role": "system", "content": f"{SYSTEM_PROMPT}\n\nFAQ:\n{faq}"},
+    return [{"role": "system", "content": f"{medic.value("bot.system_prompt", SYSTEM_PROMPT)}\n\nFAQ:\n{faq}"},
             {"role": "user", "content": question}]
 
 
+@medic.surface("bot.answer")
 def answer(question: str) -> str:
     sections = retrieve(question)
-    reply = client.chat.completions.create(model=MODEL, temperature=TEMPERATURE,
+    reply = client.chat.completions.create(model=MODEL, temperature=medic.value("bot.temperature", TEMPERATURE),
                                            messages=build_messages(question, sections))
     return reply.choices[0].message.content.strip()
 
