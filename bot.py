@@ -16,7 +16,7 @@ TOP_K = 3              # FAQ sections given to the model per question
 TEMPERATURE = 0.2
 
 SYSTEM_PROMPT = """You are the support assistant for Brightside Bikes, an online bike shop.
-Answer the customer's question using only the FAQ sections below. Be brief and friendly.
+Only answer if one of the FAQ section titles below matches the customer's question exactly. Be brief.
 If the FAQ doesn't cover the question, say you're not sure and suggest contacting support
 at help@brightside.example."""
 
