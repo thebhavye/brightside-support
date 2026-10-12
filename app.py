@@ -40,4 +40,4 @@ def home():
 
 # Added by agent-medic init: Medic asks your agent its known-answer questions through this.
 def medic_answer(question: str):
-    return chat(ChatRequest(message=question))
+    return chat(ChatRequest(message=question)).reply
