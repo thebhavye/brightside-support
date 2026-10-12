@@ -64,7 +64,7 @@ def answer(question: str) -> str:
     sections = retrieve(question)
     reply = client.chat.completions.create(model=MODEL, temperature=medic.value("bot.temperature", TEMPERATURE),
                                            messages=build_messages(question, sections))
-    return reply.choices[0].message.content.strip()
+    return reply.choices[0].message["content"].strip()
 
 
 if __name__ == "__main__":
